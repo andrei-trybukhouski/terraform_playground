@@ -5,9 +5,13 @@ terraform {
       version = "~> 3.27"
     }
   }
-
   required_version = ">= 0.14.9"
-}
+  backend "s3" {
+   bucket = "andrei-trybukhouski-test-project-terraform" 
+   key    = "test/terraform.tfstate"             
+   region = "eu-central-1"                                
+  }
+} 
 
 provider "aws" {
   profile = "default"
@@ -40,16 +44,14 @@ data "aws_ssm_parameter" "dev_pass" {
 }
 
 resource "aws_instance" "app_server" {
-   count         = 0
+  count         = var.serverscount
   ami           =  data.aws_ami.latest_ubuntu.id
   instance_type = "t2.micro"
   user_data = file("userdata")
   vpc_security_group_ids = [aws_security_group.web_sg.id]
-  tags = {
+  tags = merge({
     Name = "ExampleAppServer"
-    Owner = "Andrei Trybukhouski"
-    Env = "test"
-  }
+  }, var.common_tags)
   lifecycle {
     create_before_destroy = true
   }
@@ -79,16 +81,14 @@ resource "aws_security_group" "web_sg" {
 
 output "my_instance_id" {
   description = "InstanceID of our server"
-  value       = aws_instance.app_server[0].id
+  value       = aws_instance.app_server[*].id
 }
 output "my_instance_ip" {
   description = "IP of our server"
-  value       = aws_instance.app_server[0].public_ip
+  value       = (length(aws_instance.app_server) > 0 ? aws_instance.app_server[*].public_ip:[])
 }
 output "my_sg_id" {
   description = "ID of sec_grp"
   value       = aws_security_group.web_sg.id
 }
-output "arn" {
-  value = local.ami
-}
+

@@ -6,3 +6,6 @@ variable "common_tags" {
 
   }
 }
+variable "serverscount" {
+  default = 1
+}
