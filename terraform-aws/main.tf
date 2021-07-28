@@ -33,9 +33,10 @@ locals {
   ami = data.aws_ami.latest_ubuntu.arn
 }
 
-resource "aws_key_pair" "frankfurt2" {
-  key_name   = "frankfurt2"
-  public_key = file("frnkfurt.pem")
+resource "aws_key_pair" "key1" {
+  key_name   = "frankfurt1-${var.project_name}"
+  public_key = file("id_rsa.pub")
+
 } 
 
 resource "aws_ssm_parameter" "dev_pass" {
@@ -60,7 +61,7 @@ resource "aws_instance" "app_server" {
   tags = merge({
     Name = "ExampleAppServer"
   }, var.common_tags)
-  key_name = "frankfurt-1"
+  key_name = aws_key_pair.key1.key_name
   lifecycle {
     create_before_destroy = true
   }
@@ -87,17 +88,3 @@ resource "aws_security_group" "web_sg" {
   }, var.common_tags)
 
 }
-
-output "my_instance_id" {
-  description = "InstanceID of our server"
-  value       = aws_instance.app_server[*].id
-}
-output "my_instance_ip" {
-  description = "IP of our server"
-  value       = (length(aws_instance.app_server) > 0 ? aws_instance.app_server[*].public_ip : [])
-}
-output "my_sg_id" {
-  description = "ID of sec_grp"
-  value       = aws_security_group.web_sg.id
-}
-

@@ -1,3 +1,7 @@
+variable "project_name" {
+  default = "TF-Test"
+}
+
 variable "common_tags" {
   type = map(any)
   default = {
