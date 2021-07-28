@@ -1,8 +1,8 @@
 variable "common_tags" {
-  type        = map
+  type = map(any)
   default = {
-    Owner       = "Andrei Trybukhouski"
-    Project     = "TF-Test"
+    Owner   = "Andrei Trybukhouski"
+    Project = "TF-Test"
 
   }
 }
